@@ -90,10 +90,21 @@ class SQLObject
   end
 
   def update
-    # ...
+    set_str = attributes.to_a[1..-1].reduce('') do |str, pair|
+      str += "#{pair[0]} = ?, "
+    end[0..-3]
+
+    DBConnection.execute(<<-SQL, *attribute_values[1..-1], self.id)
+      UPDATE
+        #{self.class.table_name}
+      SET
+        #{set_str}
+      WHERE
+        id = ?
+    SQL
   end
 
   def save
-    # ...
+    id.nil? ? insert : update
   end
 end
